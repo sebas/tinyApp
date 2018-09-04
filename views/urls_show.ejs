@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>TinyApp: URL details</title>
+</head>
+<body>
+    <header>
+            <% include ../views/partials/_header %>
+    </header>
+    <!-- Add your EJS code here -->
+    <% if ( shortURL === "Not found" ) { %>
+        <h1>URL:</h1>
+        <ul>
+           <li>The shortURL was not found in our database.</li>
+        </ul>
+    <% } else { %>
+        <h1>URL:</h1>
+        <ul>
+        <li>The shortURL <%= shortURL %> points to <%= longURL %></li>
+        </ul>
+    <% } %>
+
+</body>
+</html>

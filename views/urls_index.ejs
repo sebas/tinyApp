@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>TinyApp: URLs list</title>
+</head>
+<body>
+    <header>
+            <% include ../views/partials/_header %>
+    </header>
+    <!-- Add your EJS code here -->
+    <p>Shorten a new <a href='#'>URL</a></p>
+
+    <h1>URLS:</h1>
+
+    <ul>
+    <% for (const key in urls) { %>
+        <% if (urls.hasOwnProperty(key)) { %>
+            <% const shorten = urls[key]; %>
+            <li><%= shorten %> - <%= key %></li>
+        <% } %>
+    <% } %>
+    </ul>
+</body>
+</html>
