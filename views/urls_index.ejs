@@ -5,19 +5,19 @@
 </head>
 <body>
     <header>
-            <% include ../views/partials/_header %>
+        <% include ../views/partials/_header %>
     </header>
-    <p>Shorten a new <a href='#'>URL</a></p>
+    <p>Shorten a new <a href='/urls/new'>URL</a></p>
 
     <h1>URLS:</h1>
 
     <ul>
-    <% for (const key in urls) { %>
-        <% if (urls.hasOwnProperty(key)) { %>
-            <% const shorten = urls[key]; %>
-            <li><%= shorten %> - <%= key %></li>
+        <% for (const key in urls) { %>
+            <% if (urls.hasOwnProperty(key)) { %>
+                <% const shorten = urls[key]; %>
+                <li><%= shorten %> - <%= key %></li>
+            <% } %>
         <% } %>
-    <% } %>
     </ul>
 </body>
 </html>
