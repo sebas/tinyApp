@@ -1,1 +1,7 @@
 <h1>Title</h1>
+
+<% if( username === undefined ) { %>
+<form method="POST" action="/login"><input type="text" name="username"><button type="submit">Login</button></form>
+<% } else { %>
+ <p>Hi <%= username %> <form method="POST" action="/logout"><button type="submit">Logout</button></form></p> 
+<% } %>
