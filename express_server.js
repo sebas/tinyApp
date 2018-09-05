@@ -32,15 +32,6 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-app.post("/urls", (req, res) => {
-  let objectKey = generateRandomString();
-  let longURL = req.body.longURL; // TODO what is we dont have a long url
-  urlDatabase[objectKey] = longURL;
-  console.log("base: ",  );
-  console.log(urlDatabase);
-  res.redirect(req.protocol + "://" + req.get('host') + "/urls/" + objectKey);      
-});
-
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
@@ -64,6 +55,28 @@ app.post("/urls/:id/delete", (req, res) => {
     console.log(urlDatabase);
     res.redirect(req.protocol + "://" + req.get('host') + "/urls");
   }
+});
+
+app.post("/urls/:id", (req, res) => {
+  let longURL = req.body.longURL;
+  console.log("Updating longURL", longURL);
+  urlDatabase[req.params.id] = longURL;
+  if( urlDatabase[req.params.id] === undefined ) {
+    console.log(req.params.id);
+    res.redirect(req.protocol + "://" + req.get('host') + "/notFound");
+  } else {
+    let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id] };
+    res.render("urls_show", templateVars);
+  }
+});
+
+app.post("/urls", (req, res) => {
+  let objectKey = generateRandomString();
+  let longURL = req.body.longURL; // TODO what is we dont have a long url
+  urlDatabase[objectKey] = longURL;
+  console.log("base: ",  );
+  console.log(urlDatabase);
+  res.redirect(req.protocol + "://" + req.get('host') + "/urls/" + objectKey);      
 });
 
 app.get("/urls/:id", (req, res) => {
