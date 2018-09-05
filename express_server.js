@@ -33,7 +33,6 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-
   let objectKey = generateRandomString();
   let longURL = req.body.longURL; // TODO what is we dont have a long url
   urlDatabase[objectKey] = longURL;
@@ -69,7 +68,8 @@ app.get("/urls/:id", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   let longURL = urlDatabase[req.params.shortURL];
   if (longURL === undefined) {
-    res.send("oh lordy, why are you like this?  why you do?", req.params.shortURL);
+    // res.send("oh lordy, why are you like this?  why you do?", req.params.shortURL);
+    res.redirect(req.protocol + "://" + req.get('host') + "/notFound");
   } else {
     console.log(req.params.shortURL);
     console.log(urlDatabase[req.params.shortURL]);
