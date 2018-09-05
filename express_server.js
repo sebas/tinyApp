@@ -54,6 +54,18 @@ app.get("/notFound", (req, res) => {
   res.render("url_notFound");
 });
 
+app.post("/urls/:id/delete", (req, res) => {
+  if( urlDatabase[req.params.id] === undefined ) {
+    console.log(req.params.id);
+    res.redirect(req.protocol + "://" + req.get('host') + "/notFound");
+  } else {
+    console.log(req.params.id);
+    delete urlDatabase[req.params.id];
+    console.log(urlDatabase);
+    res.redirect(req.protocol + "://" + req.get('host') + "/urls");
+  }
+});
+
 app.get("/urls/:id", (req, res) => {
   let templateVars = {};
   if( urlDatabase[req.params.id] === undefined ) {

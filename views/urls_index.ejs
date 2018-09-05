@@ -15,7 +15,7 @@
         <% for (const key in urls) { %>
             <% if (urls.hasOwnProperty(key)) { %>
                 <% const shorten = urls[key]; %>
-                <li><%= shorten %> - <%= key %></li>
+                <li><%= key %> - <a href="<%= shorten %>"><%= shorten %></a> <form method="POST" action="/urls/<%= key %>/delete"><input type="submit" value="Delete"></form></li>
             <% } %>
         <% } %>
     </ul>
