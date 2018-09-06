@@ -20,10 +20,15 @@ let users = {
     email: "user@example.com", 
     password: "purple-monkey-dinosaur"
   },
- "user2RandomID": {
+  "user2RandomID": {
     id: "user2RandomID", 
     email: "user2@example.com", 
     password: "dishwasher-funk"
+  },
+  "user3RandomID": {
+    id: "user3RandomID", 
+    email: "s@s.com", 
+    password: "tatata"
   }
 };
 
@@ -41,6 +46,48 @@ function generateRandomString(howMany = 6) {
   }
 
   return rndStr;
+}
+
+function userEmailAlreadyExists(email) {
+  let found = false;
+  for (const userKey in users) {
+    const user = users[userKey];
+    console.log(`${email} vs ${user.id}: ${user.email} - ${user.password} loop`);
+    if(user.email === email) {
+      console.log(`True ${email} - ${user.email} all`);
+      found=true;
+    }
+  }
+
+  return found;
+}
+
+function userPasswordMatches(password) {
+  let found = false;
+  for (const userKey in users) {
+    const user = users[userKey];
+    console.log(`${password} vs ${user.id}: ${user.email} - ${user.password} loop`);
+    if(user.password === password) {
+      console.log(`True ${password} - ${user.password} all`);
+      found=true;
+    }
+  }
+
+  return found;
+}
+
+function userGetUserIDFromEmail(email){
+  let user_id = '';
+  for (const userKey in users) {
+    const user = users[userKey];
+    console.log(`${email} vs ${user.id}: ${user.email} - ${user.password} loop`);
+    if(user.email === email) {
+      console.log(`True ${email} - ${user.email} all`);
+      user_id=user.id;
+    }
+  }
+
+  return user_id;
 }
 
 app.get("/", (req, res) => {
@@ -76,22 +123,33 @@ app.get("/register", (req, res) => {
   res.render("register");
 });
 
-app.post("/register", (req, res) => {
-  let userKey = generateRandomString();
-  let email = req.body.email;
-  let password = req.body.password;
-  // Adding an object to an object
-  let newUser = { 
-    id: userKey,
-    email: email,
-    password: password
-  };
-  users[userKey] = newUser;
 
-  console.log("New users looks like: ", userKey, email, password );
-  console.log("Users database: ",  users);
-  res.cookie('user_id', userKey);
-  res.redirect(req.protocol + "://" + req.get('host') + "/urls");
+app.post("/register", (req, res) => {
+  console.log(` ${req.body.email} - ${req.body.password} register post`);
+  if(req.body.email === "" || req.body.password === "" ) {
+    console.log("empty something... redirecting back");
+    // res.redirect(400, req.protocol + "://" + req.get('host') + "/register");
+    res.redirect(req.protocol + "://" + req.get('host') + "/register");
+  } else if (userEmailAlreadyExists(req.body.email) ) {
+    // email already on the database... redirect
+    res.redirect(req.protocol + "://" + req.get('host') + "/register");
+  } else {
+    let userKey = generateRandomString();
+    let email = req.body.email;
+    let password = req.body.password;
+    // Adding an object to an object
+    let newUser = { 
+      id: userKey,
+      email: email,
+      password: password
+    };
+    users[userKey] = newUser;
+
+    console.log("New users looks like: ", userKey, email, password );
+    console.log("Users database: ",  users);
+    res.cookie('user_id', userKey);
+    res.redirect(req.protocol + "://" + req.get('host') + "/urls");
+  }
 });
 
 app.get("/notFound", (req, res) => {
@@ -100,14 +158,20 @@ app.get("/notFound", (req, res) => {
 
 app.get("/login", (req, res) => {
   console.log("login cookie user_id", req.body.user_id);
-  // TODO we need to validate usename and password
   res.render("login");
 });
 
 app.post("/login", (req, res) => {
-  console.log("login(post) cookie user_id", req.body.user_id);
-  res.cookie('user_id', req.body.user_id);
-  res.redirect(req.protocol + "://" + req.get('host') + "/urls");
+  if (!userEmailAlreadyExists(req.body.email) ) {
+    res.redirect(403, req.protocol + "://" + req.get('host') + "/login");
+  } else if (userPasswordMatches(req.body.password) ) {
+    const user_id = userGetUserIDFromEmail(req.body.email);
+    console.log("login(post) cookie user_id and user_id", req.body.user_id, user_id);
+    res.cookie('user_id', user_id);
+    res.redirect(req.protocol + "://" + req.get('host') + "/urls");
+  } else {
+    res.redirect(req.protocol + "://" + req.get('host') + "/login");
+  }
 });
 
 app.post("/logout", (req, res) => {
