@@ -9,12 +9,12 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 app.use(cookieParser());
 
-var urlDatabase = {
+let urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
-const users = { 
+let users = { 
   "userRandomID": {
     id: "userRandomID", 
     email: "user@example.com", 
@@ -54,7 +54,6 @@ app.get("/", (req, res) => {
   }
 });
 
-
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
@@ -75,9 +74,18 @@ app.get("/register", (req, res) => {
 
 app.post("/register", (req, res) => {
   let userKey = generateRandomString();
-  let username = req.body.useraname;
-  urlDatabase[userKey] = userKey;
-  console.log("URL database: ",  urlDatabase);
+  let email = req.body.email;
+  let password = req.body.password;
+  // Adding an object to an object
+  let newUser = { 
+    id: userKey,
+    email: email,
+    password: password
+  };
+  users[userKey] = newUser;
+
+  console.log("New users looks like: ", userKey, email, password );
+  console.log("Users database: ",  users);
   res.redirect(req.protocol + "://" + req.get('host') + "/urls");
 });
 
@@ -129,7 +137,7 @@ app.post("/urls/:id", (req, res) => {
 
 app.post("/urls", (req, res) => {
   let objectKey = generateRandomString();
-  let longURL = req.body.longURL; // TODO what is we dont have a long url
+  let longURL = req.body.longURL; // TODO what is we don't have a long url
   urlDatabase[objectKey] = longURL;
   console.log("URL database: ",  urlDatabase);
   res.redirect(req.protocol + "://" + req.get('host') + "/urls/" + objectKey);      
