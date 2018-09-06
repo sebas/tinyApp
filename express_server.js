@@ -128,11 +128,10 @@ app.post("/register", (req, res) => {
   console.log(` ${req.body.email} - ${req.body.password} register post`);
   if(req.body.email === "" || req.body.password === "" ) {
     console.log("empty something... redirecting back");
-    // res.redirect(400, req.protocol + "://" + req.get('host') + "/register");
-    res.redirect(req.protocol + "://" + req.get('host') + "/register");
+    res.status(400).send('Sorry, you forgot to fill something, please go back and try again!');
   } else if (userEmailAlreadyExists(req.body.email) ) {
     // email already on the database... redirect
-    res.redirect(req.protocol + "://" + req.get('host') + "/register");
+    res.status(400).send('Sorry, you are already registered, please go back and use your credentials!');
   } else {
     let userKey = generateRandomString();
     let email = req.body.email;
