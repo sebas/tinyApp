@@ -14,6 +14,19 @@ var urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
 function getRandomInt(max) {
   return Math.floor(Math.random() * Math.floor(max));
 }
@@ -30,6 +43,18 @@ function generateRandomString(howMany = 6) {
   return rndStr;
 }
 
+app.get("/", (req, res) => {
+  console.log("cookie username", req.body.username);
+  if(req.body.username === undefined) {
+    console.log("going for the login form");
+    res.redirect(req.protocol + "://" + req.get('host') + "/login");
+  } else {
+    console.log("going for the URLs list");
+    res.redirect(req.protocol + "://" + req.get('host') + "/urls");
+  }
+});
+
+
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
@@ -44,8 +69,27 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
+app.get("/register", (req, res) => {
+  res.render("register");
+});
+
+app.post("/register", (req, res) => {
+
+  res.redirect(req.protocol + "://" + req.get('host') + "/urls");
+});
+
 app.get("/notFound", (req, res) => {
   res.render("url_notFound");
+});
+
+app.get("/login", (req, res) => {
+  console.log("cookie username", req.body.username);
+  if(req.body.username === undefined) {
+    res.render("login");
+  }
+  // TODO we need to validate usename and password
+  res.cookie('username', req.body.username);
+  res.redirect(req.protocol + "://" + req.get('host') + "/urls");
 });
 
 app.post("/login", (req, res) => {
@@ -55,7 +99,7 @@ app.post("/login", (req, res) => {
 
 app.post("/logout", (req, res) => {
   res.clearCookie('username');
-  res.redirect(req.protocol + "://" + req.get('host') + "/urls");
+  res.redirect(req.protocol + "://" + req.get('host') + "/");
 });
 
 app.post("/urls/:id/delete", (req, res) => {
@@ -87,7 +131,7 @@ app.post("/urls", (req, res) => {
   let objectKey = generateRandomString();
   let longURL = req.body.longURL; // TODO what is we dont have a long url
   urlDatabase[objectKey] = longURL;
-  console.log("base: ",  );
+  console.log("base: ",  urlDatabase);
   console.log(urlDatabase);
   res.redirect(req.protocol + "://" + req.get('host') + "/urls/" + objectKey);      
 });
