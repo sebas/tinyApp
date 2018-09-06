@@ -7,7 +7,6 @@
     <header>
         <% include ../views/partials/_header %>
     </header>
-    <p>Shorten a new <a href='/urls/new'>URL</a></p>
 
     <h1>URLS:</h1>
 
@@ -15,9 +14,10 @@
         <% for (const key in urls) { %>
             <% if (urls.hasOwnProperty(key)) { %>
                 <% const shorten = urls[key]; %>
-                <li><%= key %> -> <a href="<%= shorten %>"><%= shorten %></a> <a href="/urls/<%= key %>">Edit</a> <form method="POST" action="/urls/<%= key %>/delete"><input type="submit" value="Delete"></form></li>
+                <li><a href="/u/<%= key %>"><%= key %></a> -> <a href="<%= shorten %>"><%= shorten %></a> <a href="/urls/<%= key %>">Edit</a> <form method="POST" action="/urls/<%= key %>/delete"><input type="submit" value="Delete"></form></li>
             <% } %>
         <% } %>
     </ul>
 </body>
 </html>
+<!-- urls_index.ejs -->

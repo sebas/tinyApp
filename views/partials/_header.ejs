@@ -1,7 +1,10 @@
 <h1>Title</h1>
 
-<% if( user.email === undefined ) { %>
-<p><form method="POST" action="/login"><input type="text" name="username"><button type="submit">Login</button></form> <a href="/register">Register</a></p>
+<% if( user === undefined ) { %>
+<h2><a href="/login">Login</a> if you have an account or if you don't <a href="/register">Register</a></h2>
 <% } else { %>
  <p>Hi <%= user.email %> <form method="POST" action="/logout"><button type="submit">Logout</button></form></p> 
+
+ <p>Shorten a new <a href='/urls/new'>URL</a></p>
 <% } %>
+<!-- _header.ejs -->
