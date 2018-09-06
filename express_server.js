@@ -25,7 +25,7 @@ const users = {
     email: "user2@example.com", 
     password: "dishwasher-funk"
   }
-}
+};
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * Math.floor(max));
@@ -74,7 +74,10 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-
+  let userKey = generateRandomString();
+  let username = req.body.useraname;
+  urlDatabase[userKey] = userKey;
+  console.log("URL database: ",  urlDatabase);
   res.redirect(req.protocol + "://" + req.get('host') + "/urls");
 });
 
@@ -83,16 +86,13 @@ app.get("/notFound", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  console.log("cookie username", req.body.username);
-  if(req.body.username === undefined) {
-    res.render("login");
-  }
+  console.log("login cookie username", req.body.username);
   // TODO we need to validate usename and password
-  res.cookie('username', req.body.username);
-  res.redirect(req.protocol + "://" + req.get('host') + "/urls");
+  res.render("login");
 });
 
 app.post("/login", (req, res) => {
+  console.log("login(post) cookie username", req.body.username);
   res.cookie('username', req.body.username);
   res.redirect(req.protocol + "://" + req.get('host') + "/urls");
 });
@@ -131,8 +131,7 @@ app.post("/urls", (req, res) => {
   let objectKey = generateRandomString();
   let longURL = req.body.longURL; // TODO what is we dont have a long url
   urlDatabase[objectKey] = longURL;
-  console.log("base: ",  urlDatabase);
-  console.log(urlDatabase);
+  console.log("URL database: ",  urlDatabase);
   res.redirect(req.protocol + "://" + req.get('host') + "/urls/" + objectKey);      
 });
 
