@@ -226,7 +226,7 @@ app.get("/logout", (req, res) => {
 // Logs out a user destorying the session (POST version)
 app.post("/logout", (req, res) => {
   req.session = null;
-  res.redirect(req.protocol + "://" + req.get('host') + "/");
+  res.redirect("/");
 });
 
 // Returns the whole database in JSON format
@@ -245,7 +245,7 @@ app.get("/urls", (req, res) => {
 // Form to create a new short URL
 app.get("/urls/new", (req, res) => {
   if(req.session.user_id === undefined) {
-    res.redirect(req.protocol + "://" + req.get('host') + "/login");
+    res.redirect("/login");
   } else {
     const user = users[req.session.user_id];
     let templateVars = { user: user };
@@ -256,11 +256,11 @@ app.get("/urls/new", (req, res) => {
 // Delete an URL from the database if conditions are met. 
 app.delete("/urls/:id/delete", (req, res) => {
   if( urlDatabase[req.params.id] === undefined ) {
-    res.redirect(req.protocol + "://" + req.get('host') + "/notFound");
+    res.redirect("/notFound");
   } else {
     if(owns(req.session.user_id, req.params.id)) {
       delete urlDatabase[req.params.id];
-      res.redirect(req.protocol + "://" + req.get('host') + "/urls");
+      res.redirect("/urls");
     } else {
       res.status(403).send('Sorry, only the owner can delete a URL!');
     }
@@ -299,17 +299,17 @@ app.post("/urls", (req, res) => {
   let longURL = req.body.longURL; // TODO what is we don't have a long url
   let newURL = {id: objectKey, longURL: longURL, userID: req.session.user_id};
   urlDatabase[objectKey] = newURL;
-  res.redirect(req.protocol + "://" + req.get('host') + "/urls/" + objectKey);      
+  res.redirect("/urls/" + objectKey);      
 });
 
 // Redirects to the long URL corresponding to the short URL given
 app.get("/u/:shortURL", (req, res) => {
   if(urlDatabase[req.params.shortURL] === undefined) { // It is not in the database.
-    res.redirect(req.protocol + "://" + req.get('host') + "/notFound");
+    res.redirect("/notFound");
   } else {
       let longURL = urlDatabase[req.params.shortURL].longURL;
       if (longURL === undefined) {
-        res.redirect(req.protocol + "://" + req.get('host') + "/notFound");
+        res.redirect("/notFound");
       } else {
         res.redirect(longURL);
       }
