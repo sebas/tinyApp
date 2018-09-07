@@ -13,35 +13,35 @@ let urlDatabase = {
   "7sm5xK":  {
     id: "7sm5xK",
     longURL: "http://www.canada.com",
-    owner: "user2RandomID"
+    userID: "user2RandomID"
   },  
   "8sm5xK":  {
     id: "8sm5xK",
     longURL: "http://www.facebook.com",
-    owner: "userRandomID"
+    userID: "userRandomID"
   },
   "b2xVn2": {
     id: "b2xVn2",
     longURL: "http://www.lighthouselabs.ca",
-    owner: "user3RandomID"
+    userID: "user3RandomID"
   },
   "9sm5xK":  {
     id: "9sm5xK",
     longURL: "http://www.google.com",
-    owner: "user3RandomID"
+    userID: "user3RandomID"
   }
 };
 
 let users = { 
   "userRandomID": {
     id: "userRandomID", 
-    email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+    email: "a@s.com", 
+    password: "tatata"
   },
   "user2RandomID": {
     id: "user2RandomID", 
-    email: "user2@example.com", 
-    password: "dishwasher-funk"
+    email: "b@s.com", 
+    password: "tatata"
   },
   "user3RandomID": {
     id: "user3RandomID", 
@@ -108,6 +108,37 @@ function userGetUserIDFromEmail(email){
   return user_id;
 }
 
+const owns = function userOwnsURL(user_id, urlGiven) {
+  let ownsIt = false;
+  for (const urlKey in urlDatabase) {
+    const url = urlDatabase[urlKey];
+    console.log(`${user_id} vs ${urlGiven}: ${url.id} - ${url.longURL} loop`);
+    if(user_id === url.userID && urlGiven === url.id) {
+      console.log(`True ${user_id} - ${url.userID} and ${urlGiven} - ${url.id} all`);
+      ownsIt=true;
+    }
+  }
+
+  return ownsIt;  
+};
+
+const uURLs = function urlsForUser(user_id) {
+  let ownsIt = {};
+  for (const urlKey in urlDatabase) {
+    const url = urlDatabase[urlKey];
+    console.log(`${user_id} loop`);
+    if(user_id === url.userID) {
+      console.log(`True ${user_id} - ${url.userID} all`);
+      ownsIt[urlKey] = { id: url.id, longURL: url.longURL, userID: url.userID};
+    }
+  }
+
+  console.log(`${ownsIt} return`);
+  console.log(ownsIt);
+  return ownsIt;
+};
+
+// The home page, it redirects depending on a user being logged or not. 
 app.get("/", (req, res) => {
   console.log("cookie user_id", req.body.user_id);
   if(req.body.user_id === undefined) {
@@ -119,12 +150,14 @@ app.get("/", (req, res) => {
   }
 });
 
+// The form to register as a new user
 app.get("/register", (req, res) => {
   res.render("register");
 });
 
+// Add a new user to our database.
 app.post("/register", (req, res) => {
-  console.log(` ${req.body.email} - ${req.body.password} register post`);
+  console.log(`${req.body.email} - ${req.body.password} register post`);
   if(req.body.email === "" || req.body.password === "" ) {
     console.log("empty something... redirecting back");
     res.status(400).send('Sorry, you forgot to fill something, please go back and try again!');
@@ -151,7 +184,8 @@ app.post("/register", (req, res) => {
 });
 
 app.get("/notFound", (req, res) => {
-  res.render("url_notFound");
+  const user = users[req.cookies.user_id];  
+  res.render("url_notFound", {user: user});
 });
 
 app.get("/login", (req, res) => {
@@ -184,13 +218,13 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
   const user = users[req.cookies.user_id];
   console.log('user', user);
-  const templateVars = { user: user, urls: urlDatabase };
+  const templateVars = { user: user, urls: uURLs(req.cookies.user_id) };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  console.log('id and user', req.cookies.user_id, user);
-  if(req.body.user_id === undefined) {
+  console.log('user_id', req.cookies.user_id);
+  if(req.cookies.user_id === undefined) {
     console.log("going for the login form");
     res.redirect(req.protocol + "://" + req.get('host') + "/login");
   } else {
@@ -201,54 +235,62 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
+// Delete an URL from the database if conditions are met. 
 app.post("/urls/:id/delete", (req, res) => {
   if( urlDatabase[req.params.id] === undefined ) {
     console.log(req.params.id);
     res.redirect(req.protocol + "://" + req.get('host') + "/notFound");
   } else {
-    console.log(req.params.id);
-    delete urlDatabase[req.params.id];
-    console.log(urlDatabase);
-    res.redirect(req.protocol + "://" + req.get('host') + "/urls");
+    if(owns(req.cookies.user_id, req.params.id)) {
+      console.log(req.params.id);
+      delete urlDatabase[req.params.id];
+      console.log(urlDatabase);
+      res.redirect(req.protocol + "://" + req.get('host') + "/urls");
+    } else {
+      res.status(403).send('Sorry, only the owner can delete a URL!');
+    }
   }
 });
 
+// Edit an URL in the database if conditions are met.
 app.post("/urls/:id", (req, res) => {
-  let longURL = req.body.longURL;
-  console.log("Updating longURL", longURL);
-  urlDatabase[req.params.id] = longURL;
-  if( urlDatabase[req.params.id] === undefined ) {
-    console.log(req.params.id);
-    res.redirect(req.protocol + "://" + req.get('host') + "/notFound");
+  if(owns(req.cookies.user_id, req.params.id)) {
+    let longURL = req.body.longURL;
+    if( longURL === '') {
+      res.status(400).send('Sorry, long URL should not be empty!');
+    } else {
+      console.log("Updating longURL", longURL);
+      urlDatabase[req.params.id].longURL = longURL;
+      res.redirect("/urls");
+    }
   } else {
-    const user = users[req.cookies.user_id];
-    const templateVars = { user: user, shortURL: req.params.id, longURL: urlDatabase[req.params.id] };
-    res.render("urls_show", templateVars);
+    res.status(403).send('Sorry, only the owner can edit a URL!');
   }
 });
 
 app.get("/urls/:id", (req, res) => {
-  let templateVars = {};
-  if( urlDatabase[req.params.id] === undefined ) {
-    console.log(req.params.id);
-    res.redirect(req.protocol + "://" + req.get('host') + "/notFound");
-  } else {
+  if(owns(req.cookies.user_id, req.params.id)) {
     const user = users[req.cookies.user_id];
-    templateVars = { user: user, shortURL: req.params.id, longURL: urlDatabase[req.params.id] };
+    const templateVars = { user: user, shortURL: req.params.id, longURL: urlDatabase[req.params.id] };
     res.render("urls_show", templateVars);
+  } else {
+    res.status(403).send('Sorry, only the owner can edit a URL!');
   }
 });
 
 app.post("/urls", (req, res) => {
+  // Add a new url to the database
+  console.log("Add a new url to the database");
   let objectKey = generateRandomString();
   let longURL = req.body.longURL; // TODO what is we don't have a long url
-  urlDatabase[objectKey] = longURL;
+  let newURL = {id: objectKey, longURL: longURL, userID: req.cookies.user_id};
+  urlDatabase[objectKey] = newURL;
   console.log("URL database: ",  urlDatabase);
   res.redirect(req.protocol + "://" + req.get('host') + "/urls/" + objectKey);      
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL];
+  let longURL = urlDatabase[req.params.shortURL].longURL;
   if (longURL === undefined) {
     // res.send("oh lordy, why are you like this?  why you do?", req.params.shortURL);
     res.redirect(req.protocol + "://" + req.get('host') + "/notFound");

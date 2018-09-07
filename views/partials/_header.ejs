@@ -1,9 +1,9 @@
-<h1>Title</h1>
+<h1>TinyApp: the best URL shortener on the universe</h1>
 
 <% if( user === undefined ) { %>
 <h2><a href="/login">Login</a> if you have an account or if you don't <a href="/register">Register</a></h2>
 <% } else { %>
- <p>Hi <%= user.email %> <form method="POST" action="/logout"><button type="submit">Logout</button></form></p> 
+ <p>Hi <%= user.email %> aka (<%= user.id %>) <form method="POST" action="/logout"><button type="submit">Logout</button></form></p> 
 
  <p>Shorten a new <a href='/urls/new'>URL</a></p>
 <% } %>
