@@ -5,11 +5,13 @@ const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
+const methodOverride = require('method-override')
 
 app.disable('x-powered-by');
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 app.use(cookieSession( {secret: 'SuperArchiRecontraSecret$%^&^$#(*&Bullshit'} ));
+app.use(methodOverride('_method'));
 
 let urlDatabase = {
   "7sm5xK":  {
@@ -245,7 +247,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 // Delete an URL from the database if conditions are met. 
-app.post("/urls/:id/delete", (req, res) => {
+app.delete("/urls/:id/delete", (req, res) => {
   if( urlDatabase[req.params.id] === undefined ) {
     console.log(req.params.id);
     res.redirect(req.protocol + "://" + req.get('host') + "/notFound");
@@ -262,7 +264,7 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 // Edit an URL in the database if conditions are met.
-app.post("/urls/:id", (req, res) => {
+app.put("/urls/:id", (req, res) => {
   if(owns(req.session.user_id, req.params.id)) {
     let longURL = req.body.longURL;
     if( longURL === '') {
