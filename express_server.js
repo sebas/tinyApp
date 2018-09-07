@@ -146,16 +146,20 @@ const uURLs = function urlsForUser(user_id) {
 
 // The home page, it redirects depending on a user being logged or not. 
 app.get("/", (req, res) => {
-  if(req.body.user_id === undefined) {
-    res.redirect(req.protocol + "://" + req.get('host') + "/login");
+  if(req.session.user_id === undefined) {
+    res.redirect("/login");
   } else {
-    res.redirect(req.protocol + "://" + req.get('host') + "/urls");
+    res.redirect("/urls");
   }
 });
 
 // The form to register as a new user
 app.get("/register", (req, res) => {
-  res.render("register");
+  if(req.session.user_id === undefined) {
+    res.render("register");
+  } else {
+    res.redirect("/urls");
+  }
 });
 
 // Add a new user to our database.
@@ -180,7 +184,7 @@ app.post("/register", (req, res) => {
     users[userKey] = newUser;
 
     req.session.user_id = userKey;
-    res.redirect(req.protocol + "://" + req.get('host') + "/urls");
+    res.redirect("/urls");
   }
 });
 
@@ -192,20 +196,24 @@ app.get("/notFound", (req, res) => {
 
 // The form to do a login
 app.get("/login", (req, res) => {
-  res.render("login");
+  if(req.session.user_id === undefined) {
+    res.render("login");
+  } else {
+    res.redirect("/urls");
+  }
 });
 
 // Validates a user login
 // sets cookie and/or redirects accordingly
 app.post("/login", (req, res) => {
   if (!userEmailAlreadyExists(req.body.email) ) {
-    res.redirect(403, req.protocol + "://" + req.get('host') + "/login");
+    res.redirect(403, "/login");
   } else if (userPasswordMatches(req.body.password) ) {
     const user_id = userGetUserIDFromEmail(req.body.email);
     req.session.user_id = user_id;
-    res.redirect(req.protocol + "://" + req.get('host') + "/urls");
+    res.redirect("/urls");
   } else {
-    res.redirect(req.protocol + "://" + req.get('host') + "/login");
+    res.redirect("/login");
   }
 });
 
@@ -234,7 +242,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-// 
+// Form to create a new short URL
 app.get("/urls/new", (req, res) => {
   if(req.session.user_id === undefined) {
     res.redirect(req.protocol + "://" + req.get('host') + "/login");
