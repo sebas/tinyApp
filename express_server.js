@@ -3,12 +3,13 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
+app.disable('x-powered-by');
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
-app.use(cookieParser());
+app.use(cookieSession( {secret: 'SuperArchiRecontraSecret$%^&^$#(*&Bullshit'} ));
 
 let urlDatabase = {
   "7sm5xK":  {
@@ -141,6 +142,8 @@ const uURLs = function urlsForUser(user_id) {
 
 // The home page, it redirects depending on a user being logged or not. 
 app.get("/", (req, res) => {
+  console.log("cookie session", req.session);
+  req.session.user_id = "whatever";
   console.log("cookie user_id", req.body.user_id);
   if(req.body.user_id === undefined) {
     console.log("going for the login form");
@@ -179,18 +182,18 @@ app.post("/register", (req, res) => {
 
     console.log("New users looks like: ", userKey, email, password );
     console.log("Users database: ",  users);
-    res.cookie('user_id', userKey);
+    req.session.user_id = userKey;
     res.redirect(req.protocol + "://" + req.get('host') + "/urls");
   }
 });
 
 app.get("/notFound", (req, res) => {
-  const user = users[req.cookies.user_id];  
+  const user = users[req.session.user_id];  
   res.render("url_notFound", {user: user});
 });
 
 app.get("/login", (req, res) => {
-  console.log("login cookie user_id", req.body.user_id);
+  console.log("login cookie user_id", req.session.user_id);
   res.render("login");
 });
 
@@ -200,15 +203,20 @@ app.post("/login", (req, res) => {
   } else if (userPasswordMatches(req.body.password) ) {
     const user_id = userGetUserIDFromEmail(req.body.email);
     console.log("login(post) cookie user_id and user_id", req.body.user_id, user_id);
-    res.cookie('user_id', user_id);
+    req.session.user_id = user_id;
     res.redirect(req.protocol + "://" + req.get('host') + "/urls");
   } else {
     res.redirect(req.protocol + "://" + req.get('host') + "/login");
   }
 });
 
+app.get("/logout", (req, res) => {
+  req.session = null;
+  res.redirect("/login");
+});
+
 app.post("/logout", (req, res) => {
-  res.clearCookie('user_id');
+  req.session = null;
   res.redirect(req.protocol + "://" + req.get('host') + "/");
 });
 
@@ -217,21 +225,21 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const user = users[req.cookies.user_id];
+  const user = users[req.session.user_id];
   console.log('user', user);
-  const templateVars = { user: user, urls: uURLs(req.cookies.user_id) };
+  const templateVars = { user: user, urls: uURLs(req.session.user_id) };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  console.log('user_id', req.cookies.user_id);
-  if(req.cookies.user_id === undefined) {
+  console.log('user_id', req.session.user_id);
+  if(req.session.user_id === undefined) {
     console.log("going for the login form");
     res.redirect(req.protocol + "://" + req.get('host') + "/login");
   } else {
-    const user = users[req.cookies.user_id];
+    const user = users[req.session.user_id];
     let templateVars = { user: user };
-    console.log('id and user', req.cookies.user_id, user);
+    console.log('id and user', req.session.user_id, user);
     res.render("urls_new", templateVars);
   }
 });
@@ -242,7 +250,7 @@ app.post("/urls/:id/delete", (req, res) => {
     console.log(req.params.id);
     res.redirect(req.protocol + "://" + req.get('host') + "/notFound");
   } else {
-    if(owns(req.cookies.user_id, req.params.id)) {
+    if(owns(req.session.user_id, req.params.id)) {
       console.log(req.params.id);
       delete urlDatabase[req.params.id];
       console.log(urlDatabase);
@@ -255,7 +263,7 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // Edit an URL in the database if conditions are met.
 app.post("/urls/:id", (req, res) => {
-  if(owns(req.cookies.user_id, req.params.id)) {
+  if(owns(req.session.user_id, req.params.id)) {
     let longURL = req.body.longURL;
     if( longURL === '') {
       res.status(400).send('Sorry, long URL should not be empty!');
@@ -270,8 +278,8 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  if(owns(req.cookies.user_id, req.params.id)) {
-    const user = users[req.cookies.user_id];
+  if(owns(req.session.user_id, req.params.id)) {
+    const user = users[req.session.user_id];
     const templateVars = { user: user, shortURL: req.params.id, longURL: urlDatabase[req.params.id] };
     res.render("urls_show", templateVars);
   } else {
@@ -284,7 +292,7 @@ app.post("/urls", (req, res) => {
   console.log("Add a new url to the database");
   let objectKey = generateRandomString();
   let longURL = req.body.longURL; // TODO what is we don't have a long url
-  let newURL = {id: objectKey, longURL: longURL, userID: req.cookies.user_id};
+  let newURL = {id: objectKey, longURL: longURL, userID: req.session.user_id};
   urlDatabase[objectKey] = newURL;
   console.log("URL database: ",  urlDatabase);
   res.redirect(req.protocol + "://" + req.get('host') + "/urls/" + objectKey);      
