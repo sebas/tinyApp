@@ -4,6 +4,7 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
@@ -36,17 +37,17 @@ let users = {
   "userRandomID": {
     id: "userRandomID", 
     email: "a@s.com", 
-    password: "tatata"
+    password: "$2b$10$r1Q6HZOa8XTW7VqbpNYoNe5S3y2/mgjCdqbTVabv38nPCWS34qBYG"
   },
   "user2RandomID": {
     id: "user2RandomID", 
     email: "b@s.com", 
-    password: "tatata"
+    password: "$2b$10$BVBXJdNruKkc3dSpgJs0.Od/sVZXzDTLq/kPI3NY2JrNK5mGbfkA2"
   },
   "user3RandomID": {
     id: "user3RandomID", 
     email: "s@s.com", 
-    password: "tatata"
+    password: "$2b$10$pXUSDyMv8w9Qy/lP2GLvtuEFfhSiTv0SJDpIfkMwWEFAvr34MsVXC"
   }
 };
 
@@ -85,8 +86,8 @@ function userPasswordMatches(password) {
   for (const userKey in users) {
     const user = users[userKey];
     console.log(`${password} vs ${user.id}: ${user.email} - ${user.password} loop`);
-    if(user.password === password) {
-      console.log(`True ${password} - ${user.password} all`);
+    // bcrypt.compareSync("purple-monkey-dinosaur", hashedPassword)
+    if(bcrypt.compareSync(password, user.password)) {
       found=true;
     }
   }
@@ -167,7 +168,7 @@ app.post("/register", (req, res) => {
   } else {
     let userKey = generateRandomString();
     let email = req.body.email;
-    let password = req.body.password;
+    let password = bcrypt.hashSync(req.body.password, 10);;
     // Adding an object to an object
     let newUser = { 
       id: userKey,
