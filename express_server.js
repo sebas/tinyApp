@@ -145,7 +145,6 @@ const uURLs = function urlsForUser(user_id) {
 // The home page, it redirects depending on a user being logged or not. 
 app.get("/", (req, res) => {
   console.log("cookie session", req.session);
-  req.session.user_id = "whatever";
   console.log("cookie user_id", req.body.user_id);
   if(req.body.user_id === undefined) {
     console.log("going for the login form");
@@ -301,14 +300,19 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL].longURL;
-  if (longURL === undefined) {
-    // res.send("oh lordy, why are you like this?  why you do?", req.params.shortURL);
+  console.log("shortURL", req.params.shortURL );
+  console.log("longURL", urlDatabase[req.params.shortURL]  );
+  if(urlDatabase[req.params.shortURL] === undefined) { // It is not in the database.
     res.redirect(req.protocol + "://" + req.get('host') + "/notFound");
   } else {
-    console.log(req.params.shortURL);
-    console.log(urlDatabase[req.params.shortURL]);
-    res.redirect(longURL);
+      let longURL = urlDatabase[req.params.shortURL].longURL;
+      if (longURL === undefined) {
+        res.redirect(req.protocol + "://" + req.get('host') + "/notFound");
+      } else {
+        console.log(req.params.shortURL);
+        console.log(urlDatabase[req.params.shortURL]);
+        res.redirect(longURL);
+      }
   }
 });
 

@@ -11,7 +11,6 @@
     <% size = Object.keys(urls).length; %>
     <% if ( size > 0 ) {  %>
     <h1>URLS:</h1>
-
     <ul>
         <% for (const key in urls) { %>
             <% if (urls.hasOwnProperty(key)) { %>
@@ -20,6 +19,7 @@
             <% } %>
         <% } %>
     </ul>
+    <p>Shorten a new <a href='/urls/new'>URL</a></p>
     <% } else if (user !== undefined) { %>
         <h2>Welcome</h2>
         <p>Start shortening URLs.</p>
